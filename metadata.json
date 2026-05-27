@@ -1,0 +1,6 @@
+{
+  "name": "ArcaneNexus",
+  "description": "Premium AI-driven yield aggregator on the high-speed Arc Network blockchain.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
