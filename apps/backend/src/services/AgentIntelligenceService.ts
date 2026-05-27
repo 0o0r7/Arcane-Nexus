@@ -37,11 +37,17 @@ export class AgentIntelligenceService {
 
     try {
       const opportunities = await this.scanYieldOpportunities();
+
+      if (!opportunities || opportunities.length === 0) {
+        console.warn('[Agent] No yield opportunities found.');
+        return;
+      }
+
       const decision = await this.evaluateRebalance(opportunities);
 
       await this.supabase.logAgentActivity({
         type: 'intelligence_scan',
-        data: { opportunities, decision },
+        data: { opportunities, decision } as any,
         timestamp: new Date().toISOString(),
       });
 
@@ -49,7 +55,7 @@ export class AgentIntelligenceService {
         console.log(`[Agent] Rebalance triggered: ${decision.reason}`);
         await this.supabase.logAgentActivity({
           type: 'rebalance_triggered',
-          data: decision,
+          data: decision as any,
           timestamp: new Date().toISOString(),
         });
       }
