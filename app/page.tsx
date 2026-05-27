@@ -65,6 +65,8 @@ interface UserBalance {
 }
 
 export default function ArcaneNexus() {
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+
   // Navigation & Tab state
   const [activeTab, setActiveTab] = useState<'landing' | 'vaults' | 'analytics' | 'advisor'>('landing');
   
@@ -364,14 +366,38 @@ export default function ArcaneNexus() {
   }, [capitalInvestment, selectedTimeframe, compoundingFrequency]);
 
   // Analytics historical mockup
-  const historicalApyData = useMemo(() => [
+  const [historicalApyData, setHistoricalApyData] = useState<any[]>([
     { name: 'May 1', ArcaneUSDC: 21.4, ArcaneETH: 16.2, DualARC: 28.5 },
     { name: 'May 5', ArcaneUSDC: 22.8, ArcaneETH: 17.1, DualARC: 29.8 },
     { name: 'May 10', ArcaneUSDC: 24.5, ArcaneETH: 16.9, DualARC: 31.4 },
     { name: 'May 15', ArcaneUSDC: 23.9, ArcaneETH: 18.0, DualARC: 30.2 },
     { name: 'May 20', ArcaneUSDC: 24.1, ArcaneETH: 18.2, DualARC: 32.8 },
     { name: 'May 25', ArcaneUSDC: 24.2, ArcaneETH: 18.5, DualARC: 32.1 },
-  ], []);
+  ]);
+
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!walletConnected) return;
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/portfolio/${walletAddress}/history`);
+        const result = await response.json();
+        if (result.success && result.data) {
+          // Map backend history to chart format
+          const mappedData = result.data.map((item: any) => ({
+            name: item.date,
+            ArcaneUSDC: 20 + item.yield,
+            ArcaneETH: 15 + item.yield,
+            DualARC: 25 + item.yield
+          }));
+          setHistoricalApyData(mappedData);
+        }
+      } catch (err) {
+        console.warn("Backend not reachable, using mock data");
+      }
+    };
+    fetchStats();
+  }, [BACKEND_URL, walletConnected, walletAddress]);
 
   return (
     <div className="relative min-h-screen text-[#f1f5f9] bg-[#050608] selection:bg-[#c084fc]/30 overflow-x-hidden font-sans">
